@@ -1,0 +1,30 @@
+{
+  "_comment": "PLACEHOLDER FILE — replace this with the real google-services.json before running the app. See README.md > Configuration Firebase for step-by-step instructions.",
+  "project_info": {
+    "project_number": "000000000000",
+    "project_id": "gameboard-placeholder",
+    "storage_bucket": "gameboard-placeholder.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "android_client_info": {
+          "package_name": "com.ipssi.gameboard.game_board"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "REPLACE_WITH_REAL_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
