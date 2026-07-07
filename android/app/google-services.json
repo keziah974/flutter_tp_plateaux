@@ -1,14 +1,32 @@
 {
-  "_comment": "PLACEHOLDER FILE — replace this with the real google-services.json before running the app. See README.md > Configuration Firebase for step-by-step instructions.",
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "gameboard-placeholder",
-    "storage_bucket": "gameboard-placeholder.appspot.com"
+    "project_number": "794827757760",
+    "project_id": "game-board-9a1f1",
+    "storage_bucket": "game-board-9a1f1.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:794827757760:android:5f91a6f1a2013a8b4a3525",
+        "android_client_info": {
+          "package_name": "com.example.tp_jeux_plateaux"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1LVfly5wiYHitIfg2bnWcYMieGEuB61U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:794827757760:android:c8f1d5fb9108f7544a3525",
         "android_client_info": {
           "package_name": "com.ipssi.gameboard.game_board"
         }
@@ -16,7 +34,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "REPLACE_WITH_REAL_API_KEY"
+          "current_key": "AIzaSyC1LVfly5wiYHitIfg2bnWcYMieGEuB61U"
         }
       ],
       "services": {
