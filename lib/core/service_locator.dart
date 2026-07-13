@@ -11,7 +11,6 @@ import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/local_storage_repository.dart';
 import '../domain/repositories/score_repository.dart';
 import '../domain/repositories/user_repository.dart';
-import 'theme/theme_cubit.dart';
 
 /// Minimal hand-rolled service locator (no get_it dependency).
 ///
@@ -51,8 +50,5 @@ class ServiceLocator {
         localStorageRepository: localStorageRepository,
         currentUserId: () => authRepository.currentUser?.uid,
       );
-
-  ThemeCubit createThemeCubit() =>
-      ThemeCubit(localStorageRepository: localStorageRepository);
 }
 

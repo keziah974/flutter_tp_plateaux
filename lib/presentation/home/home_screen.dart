@@ -6,6 +6,7 @@ import '../../application/auth/auth_bloc.dart';
 import '../../application/auth/auth_event.dart';
 import '../../application/auth/auth_state.dart';
 import '../../core/theme/theme_cubit.dart';
+import '../../core/theme/theme_model.dart';
 import '../../domain/enums/game_type.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -23,12 +24,16 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Game Board'),
         actions: [
-          BlocBuilder<ThemeCubit, bool>(
-            builder: (context, isDark) {
+          BlocBuilder<ThemeCubit, AppThemeType>(
+            builder: (context, themeType) {
               return IconButton(
-                tooltip: isDark ? 'Mode clair' : 'Mode sombre',
-                icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                onPressed: () => context.read<ThemeCubit>().toggle(),
+                tooltip: 'Changer de thème',
+                icon: const Icon(Icons.palette_outlined),
+                onPressed: () {
+                  final next = AppThemeType.values[
+                      (themeType.index + 1) % AppThemeType.values.length];
+                  context.read<ThemeCubit>().switchTheme(next);
+                },
               );
             },
           ),

@@ -1,20 +1,15 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'application/auth/auth_bloc.dart';
-import 'application/auth/auth_event.dart';
 import 'core/router/app_router.dart';
-import 'core/service_locator.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
-import 'firebase_options.dart';
+import 'core/theme/theme_model.dart';
 
-Future<void> main() async {
+// Mode MOCK : pas d'initialisation Firebase ni de blocs métier.
+// Le branchement sur AuthBloc/GameBloc se fera après validation visuelle.
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
   runApp(const GameBoardApp());
 }
 
@@ -23,29 +18,15 @@ class GameBoardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locator = ServiceLocator.instance;
-
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AuthBloc>(
-          create: (_) => locator.createAuthBloc()..add(const AuthCheckRequested()),
-        ),
-        BlocProvider<ThemeCubit>(create: (_) => locator.createThemeCubit()),
-      ],
-      child: Builder(
-        builder: (context) {
-          final router = AppRouter.build(context.read<AuthBloc>());
-          return BlocBuilder<ThemeCubit, bool>(
-            builder: (context, isDark) {
-              return MaterialApp.router(
-                title: 'Game Board',
-                debugShowCheckedModeBanner: false,
-                theme: AppTheme.light,
-                darkTheme: AppTheme.dark,
-                themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-                routerConfig: router,
-              );
-            },
+    return BlocProvider<ThemeCubit>(
+      create: (_) => ThemeCubit(),
+      child: BlocBuilder<ThemeCubit, AppThemeType>(
+        builder: (context, themeType) {
+          return MaterialApp.router(
+            title: 'Game Board',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.of(themeType),
+            routerConfig: AppRouter.router,
           );
         },
       ),
