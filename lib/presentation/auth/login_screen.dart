@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../application/auth/auth_bloc.dart';
-import '../../application/auth/auth_event.dart';
-import '../../application/auth/auth_state.dart';
+import '../../core/theme/theme_context.dart';
+import '../../core/theme/theme_cubit.dart';
+import '../../core/theme/theme_model.dart';
+import '../shared/components/app_logo.dart';
+import '../shared/components/themed_background.dart';
+import '../shared/components/themed_button.dart';
+import '../shared/components/themed_card.dart';
 
+/// Écran de connexion en mode MOCK : simule un chargement d'une
+/// seconde puis navigue vers /home.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -14,9 +20,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _loading = false;
   bool _obscure = true;
 
   @override
@@ -26,127 +32,159 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-    context.read<AuthBloc>().add(SignInRequested(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        ));
+  Future<void> _signIn() async {
+    setState(() => _loading = true);
+    // Simuler connexion réussie après 1 seconde.
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+    context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final typography = context.appTypography;
+
     return Scaffold(
-      body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthAuthenticated) {
-            context.go('/home');
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-        },
+      body: ThemedBackground(
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(28),
-                    child: Form(
-                      key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AppLogo(fontSize: 32),
+                    const SizedBox(height: 32),
+                    ThemedCard(
+                      padding: const EdgeInsets.all(24),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Text('🎲', style: TextStyle(fontSize: 56)),
-                          const SizedBox(height: 8),
                           Text(
-                            'Game Board',
+                            'Connexion',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headlineSmall,
+                            style: typography.displayMedium,
                           ),
-                          const SizedBox(height: 32),
-                          TextFormField(
+                          const SizedBox(height: 24),
+                          TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
+                            style: typography.bodyLarge,
                             decoration: const InputDecoration(
                               labelText: 'Email',
-                              prefixIcon: Icon(Icons.email_outlined),
-                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.alternate_email),
                             ),
-                            validator: (value) =>
-                                (value == null || !value.contains('@'))
-                                    ? 'Email invalide'
-                                    : null,
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
+                          TextField(
                             controller: _passwordController,
                             obscureText: _obscure,
+                            style: typography.bodyLarge,
                             decoration: InputDecoration(
                               labelText: 'Mot de passe',
                               prefixIcon: const Icon(Icons.lock_outline),
-                              border: const OutlineInputBorder(),
                               suffixIcon: IconButton(
-                                icon: Icon(_obscure
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined),
+                                icon: Icon(
+                                  _obscure
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
                                 onPressed: () =>
                                     setState(() => _obscure = !_obscure),
                               ),
                             ),
-                            validator: (value) =>
-                                (value == null || value.length < 6)
-                                    ? '6 caractères minimum'
-                                    : null,
                           ),
                           const SizedBox(height: 24),
-                          BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, state) {
-                              if (state is AuthLoading) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
-                                    child: CircularProgressIndicator(),
+                          _loading
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                    color: colors.primary,
                                   ),
-                                );
-                              }
-                              return FilledButton(
-                                onPressed: _submit,
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 12),
-                                  child: Text('Se connecter'),
+                                )
+                              : ThemedButton(
+                                  label: 'Se connecter',
+                                  expanded: true,
+                                  onPressed: _signIn,
                                 ),
-                              );
-                            },
-                          ),
                           const SizedBox(height: 12),
                           TextButton(
-                            onPressed: () => context.push('/register'),
-                            child: const Text(
-                              'Pas de compte ? S\'inscrire',
+                            onPressed: _loading
+                                ? null
+                                : () => context.go('/register'),
+                            child: Text(
+                              "S'inscrire",
+                              style: typography.bodyLarge.copyWith(
+                                color: colors.accent,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 28),
+                    const ThemeSelector(),
+                  ],
                 ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Sélecteur de thème : 3 icônes cliquables.
+class ThemeSelector extends StatelessWidget {
+  const ThemeSelector({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final current = context.appThemeType;
+    final colors = context.appColors;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (final type in AppThemeType.values)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: GestureDetector(
+              onTap: () => context.read<ThemeCubit>().switchTheme(type),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: colors.surface.withValues(
+                    alpha: type == current ? 0.9 : 0.4,
+                  ),
+                  border: Border.all(
+                    color: type == current
+                        ? colors.primary
+                        : colors.primary.withValues(alpha: 0.25),
+                    width: type == current ? 2 : 1,
+                  ),
+                  boxShadow: type == current
+                      ? [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.4),
+                            blurRadius: 12,
+                          ),
+                        ]
+                      : const [],
+                ),
+                child: Text(
+                  type.emoji,
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

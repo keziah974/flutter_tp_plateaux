@@ -8,6 +8,7 @@ import '../../presentation/home/game_selection_screen.dart';
 import '../../presentation/home/home_screen.dart';
 import '../../presentation/profile/profile_screen.dart';
 import '../../presentation/profile/stats_screen.dart';
+import '../../presentation/splash/splash_screen.dart';
 
 /// Routeur en mode MOCK : pas de redirection d'authentification,
 /// la navigation est pilotée directement par les écrans.
@@ -15,8 +16,12 @@ class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/',
     routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
