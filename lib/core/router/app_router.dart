@@ -35,8 +35,10 @@ class AppRouter {
         builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
-        path: '/game-select',
-        builder: (context, state) => const GameSelectionScreen(),
+        path: '/game-select/:gameType',
+        builder: (context, state) => GameSelectionScreen(
+          gameType: state.pathParameters['gameType']!,
+        ),
       ),
       GoRoute(
         path: '/difficulty/:gameType',
