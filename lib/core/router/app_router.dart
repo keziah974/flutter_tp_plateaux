@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/auth/login_screen.dart';
 import '../../presentation/auth/register_screen.dart';
+import '../../presentation/game/camp_selection_screen.dart';
 import '../../presentation/game/difficulty_selection_screen.dart';
 import '../../presentation/game/game_screen.dart';
 import '../../presentation/home/game_selection_screen.dart';
@@ -44,6 +45,13 @@ class AppRouter {
         path: '/difficulty/:gameType',
         builder: (context, state) => DifficultySelectionScreen(
           gameType: state.pathParameters['gameType']!,
+        ),
+      ),
+      GoRoute(
+        path: '/camp/:gameType',
+        builder: (context, state) => CampSelectionScreen(
+          gameType: state.pathParameters['gameType']!,
+          difficulty: state.uri.queryParameters['difficulty'] ?? 'easy',
         ),
       ),
       GoRoute(
