@@ -9,6 +9,9 @@ import '../shared/components/themed_background.dart';
 import '../shared/components/themed_button.dart';
 import '../shared/game_over_dialog.dart';
 import '../shared/player_banner.dart';
+import 'widgets/checkers_board.dart';
+import 'widgets/connect4_board.dart';
+import 'widgets/tictactoe_board.dart';
 
 /// Écran de jeu en mode MOCK : bandeaux joueurs, plateau au centre,
 /// overlay IA et dialog de fin de partie simulables.
@@ -71,26 +74,24 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildBoard() {
-    // Les plateaux mock arrivent aux étapes 7 à 9.
-    final colors = context.appColors;
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        decoration: BoxDecoration(
-          color: colors.surface.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colors.boardBorder.withValues(alpha: 0.5),
-          ),
-        ),
-        child: Center(
-          child: Text(
-            'Plateau ${_game.label}',
-            style: context.appTypography.bodyLarge,
-          ),
-        ),
-      ),
-    );
+    switch (_game) {
+      case GameType.ticTacToe:
+        return TicTacToeBoard(
+          onCellTap: (_, _) => setState(() {
+            currentPlayer =
+                currentPlayer == 'Joueur 1' ? 'Joueur 2' : 'Joueur 1';
+          }),
+        );
+      case GameType.connect4:
+        return Connect4Board(
+          onColumnTap: (_) => setState(() {
+            currentPlayer =
+                currentPlayer == 'Joueur 1' ? 'Joueur 2' : 'Joueur 1';
+          }),
+        );
+      case GameType.checkers:
+        return const CheckersBoard();
+    }
   }
 
   @override
