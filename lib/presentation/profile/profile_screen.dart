@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../application/auth/auth_bloc.dart';
-import '../../application/auth/auth_state.dart';
-import '../../core/constants/app_constants.dart';
-import '../../core/service_locator.dart';
-import '../../domain/entities/score_model.dart';
-import '../../domain/entities/user_model.dart';
+import '../../core/theme/theme_context.dart';
+import '../shared/components/themed_background.dart';
+import '../shared/components/themed_button.dart';
+import '../shared/components/themed_card.dart';
 
+const _avatarChoices = [
+  '🎮', '🎲', '🕹️', '👾', '🤖', '🦊', '🐼', '🐸',
+  '🦁', '🐯', '🐙', '🦄', '🚀', '⭐', '🔥', '⚡',
+  '🌙', '🎯', '🏆', '💎', '👑', '🎩', '🥷', '🧙',
+];
+
+/// Profil (mock) : avatar emoji modifiable, pseudo éditable inline,
+/// lien vers les stats et déconnexion.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -17,132 +22,198 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? _avatarOverride;
+  String _avatar = '🎮';
+  bool _editingPseudo = false;
+  late final TextEditingController _pseudoController =
+      TextEditingController(text: 'Joueur1');
 
-  Future<void> _pickAvatar(UserModel user) async {
-    final emoji = await showModalBottomSheet<String>(
+  @override
+  void dispose() {
+    _pseudoController.dispose();
+    super.dispose();
+  }
+
+  void _pickAvatar() {
+    showModalBottomSheet<void>(
       context: context,
-      builder: (context) {
-        return GridView.count(
-          crossAxisCount: 5,
-          padding: const EdgeInsets.all(16),
-          children: AppConstants.avatarEmojis.map((emoji) {
-            return IconButton(
-              onPressed: () => Navigator.of(context).pop(emoji),
-              icon: Text(emoji, style: const TextStyle(fontSize: 28)),
-            );
-          }).toList(),
+      builder: (sheetContext) {
+        final typography = context.appTypography;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Choisis ton avatar', style: typography.displayMedium),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: [
+                    for (final emoji in _avatarChoices)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          setState(() => _avatar = emoji);
+                          Navigator.of(sheetContext).pop();
+                        },
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          alignment: Alignment.center,
+                          decoration: emoji == _avatar
+                              ? BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: context.appColors.primary,
+                                    width: 2,
+                                  ),
+                                )
+                              : null,
+                          child: Text(emoji,
+                              style: const TextStyle(fontSize: 28)),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
-    if (emoji == null || !mounted) return;
-
-    setState(() => _avatarOverride = emoji);
-    await ServiceLocator.instance.userRepository.updateUser(
-      user.copyWith(avatarEmoji: emoji),
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Avatar mis à jour')),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    final user = authState.user;
-    final avatarEmoji = _avatarOverride ?? user.avatarEmoji;
+    final colors = context.appColors;
+    final typography = context.appTypography;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () => _pickAvatar(user),
-                child: CircleAvatar(
-                  radius: 44,
-                  child: Text(
-                    avatarEmoji,
-                    style: const TextStyle(fontSize: 40),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        leading: BackButton(onPressed: () => context.pop()),
+      ),
+      extendBodyBehindAppBar: true,
+      body: ThemedBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: _pickAvatar,
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.surface.withValues(alpha: 0.7),
+                          border: Border.all(
+                            color: colors.primary.withValues(alpha: 0.7),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  colors.primary.withValues(alpha: 0.3),
+                              blurRadius: 22,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          _avatar,
+                          style: const TextStyle(fontSize: 56),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.primary,
+                        ),
+                        child: Icon(
+                          Icons.edit,
+                          size: 16,
+                          color: colors.background,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => _pickAvatar(user),
-                child: const Text('Changer l\'avatar'),
-              ),
-              Text(user.pseudo, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 24),
-              Expanded(
-                child: FutureBuilder<List<ScoreModel>>(
-                  future: ServiceLocator.instance.scoreRepository
-                      .getScoresForUser(user.uid),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    final scores = snapshot.data ?? [];
-                    final wins = scores.fold<int>(0, (s, e) => s + e.wins);
-                    final losses = scores.fold<int>(0, (s, e) => s + e.losses);
-                    final draws = scores.fold<int>(0, (s, e) => s + e.draws);
-
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
+                const SizedBox(height: 20),
+                // Pseudo éditable inline.
+                _editingPseudo
+                    ? ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 260),
+                        child: TextField(
+                          controller: _pseudoController,
+                          autofocus: true,
+                          textAlign: TextAlign.center,
+                          style: typography.displayMedium,
+                          onSubmitted: (_) =>
+                              setState(() => _editingPseudo = false),
+                          decoration: InputDecoration(
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.check),
+                              onPressed: () =>
+                                  setState(() => _editingPseudo = false),
+                            ),
+                          ),
+                        ),
+                      )
+                    : GestureDetector(
+                        onTap: () =>
+                            setState(() => _editingPseudo = true),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            _StatColumn(label: 'Victoires', value: wins),
-                            _StatColumn(label: 'Défaites', value: losses),
-                            _StatColumn(label: 'Nuls', value: draws),
+                            Text(
+                              _pseudoController.text,
+                              style: typography.displayMedium,
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.edit_outlined,
+                              size: 18,
+                              color: colors.textSecondary,
+                            ),
                           ],
                         ),
                       ),
-                    );
-                  },
+                const SizedBox(height: 32),
+                ThemedCard(
+                  onTap: () => context.push('/stats'),
+                  child: Row(
+                    children: [
+                      Icon(Icons.bar_chart, color: colors.primary),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          'Mes statistiques',
+                          style: typography.bodyLarge,
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: colors.primary),
+                    ],
+                  ),
                 ),
-              ),
-              TextButton.icon(
-                onPressed: () => context.push('/stats'),
-                icon: const Icon(Icons.bar_chart),
-                label: const Text('Voir les statistiques détaillées'),
-              ),
-            ],
+                const SizedBox(height: 32),
+                ThemedButton(
+                  label: 'Déconnexion',
+                  icon: Icons.logout,
+                  variant: ThemedButtonVariant.outline,
+                  expanded: true,
+                  onPressed: () => context.go('/login'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _StatColumn extends StatelessWidget {
-  final String label;
-  final int value;
-  const _StatColumn({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          '$value',
-          style: Theme.of(context)
-              .textTheme
-              .headlineMedium
-              ?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
     );
   }
 }
