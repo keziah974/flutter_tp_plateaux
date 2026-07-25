@@ -144,15 +144,16 @@ class _GameScreenState extends State<GameScreen> {
                 ),
                 if (kDebugMode) ...[
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
                     children: [
                       ThemedButton(
                         label: 'Simuler GameOver',
                         variant: ThemedButtonVariant.outline,
                         onPressed: _simulateGameOver,
                       ),
-                      const SizedBox(width: 12),
                       ThemedButton(
                         label: isBotThinking ? 'Stop IA' : 'Simuler IA',
                         variant: ThemedButtonVariant.outline,
